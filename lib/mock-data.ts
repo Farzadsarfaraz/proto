@@ -14,6 +14,7 @@ import type {
   TeamMember,
   TrendItem,
 } from "./types";
+import type { PortalRole } from "./portal";
 
 // Deterministic pseudo-random so the dashboard looks the same on every load
 // except where a feature (e.g. live refresh) intentionally mutates it.
@@ -63,6 +64,28 @@ export const CURRENT_CUSTOMER = {
   company: "Nordlicht Skincare",
   email: "lena.brandt@nordlicht-skincare.com",
   initials: "LB",
+};
+
+export const CURRENT_INFLUENCER = {
+  name: "Mila Wagner",
+  role: "Content Creator",
+  company: "@mila.wagner",
+  email: "mila.wagner@creator.octagone.io",
+  initials: "MW",
+};
+
+export const CURRENT_INTERN = {
+  name: "Jonas Vogel",
+  role: "Campaign Operations",
+  company: "Octagone",
+  email: "jonas.vogel@octagone.io",
+  initials: "JV",
+};
+
+export const PORTAL_PROFILES: Record<PortalRole, typeof CURRENT_CUSTOMER> = {
+  customer: CURRENT_CUSTOMER,
+  influencer: CURRENT_INFLUENCER,
+  intern: CURRENT_INTERN,
 };
 
 export function buildSeries(

@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { CURRENT_CUSTOMER } from "./mock-data";
+import { PORTAL_PROFILES } from "./mock-data";
+import type { PortalRole } from "./portal";
 
 const STORAGE_KEY = "octagone.session";
 
@@ -11,13 +12,14 @@ export interface Session {
   company: string;
   initials: string;
   role: string;
+  portal: PortalRole;
   loggedInAt: string;
 }
 
 interface AuthContextValue {
   session: Session | null;
   status: "loading" | "authenticated" | "unauthenticated";
-  login: (email: string) => Promise<void>;
+  login: (email: string, portal: PortalRole) => Promise<void>;
   logout: () => void;
   updateSession: (patch: Partial<Pick<Session, "name" | "email" | "company">>) => void;
 }
@@ -34,10 +36,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        setSession(JSON.parse(raw));
+      const parsed = raw ? (JSON.parse(raw) as Partial<Session>) : null;
+      // Guards against sessions stored before `portal` existed on the
+      // Session shape — without this, an old localStorage entry would
+      // authenticate with `portal: undefined` and break every redirect.
+      if (parsed && parsed.portal) {
+        setSession(parsed as Session);
         setStatus("authenticated");
       } else {
+        window.localStorage.removeItem(STORAGE_KEY);
         setStatus("unauthenticated");
       }
     } catch {
@@ -46,14 +53,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const login = useCallback(async (email: string) => {
+  const login = useCallback(async (email: string, portal: PortalRole) => {
     await new Promise((resolve) => setTimeout(resolve, 650));
+    const profile = PORTAL_PROFILES[portal];
     const next: Session = {
       email,
-      name: CURRENT_CUSTOMER.name,
-      company: CURRENT_CUSTOMER.company,
-      initials: CURRENT_CUSTOMER.initials,
-      role: CURRENT_CUSTOMER.role,
+      name: profile.name,
+      company: profile.company,
+      initials: profile.initials,
+      role: profile.role,
+      portal,
       loggedInAt: new Date().toISOString(),
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));

@@ -2,117 +2,146 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { BarChart3, Compass, Flame, Loader2, Lightbulb, Lock, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { ChevronDown, Compass, Flame, Loader2, Lock, Mail, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { PORTAL_HOME } from "@/lib/portal";
+import type { PortalRole } from "@/lib/portal";
+import { PORTAL_PROFILES } from "@/lib/mock-data";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { FacebookIcon, GoogleIcon, InstagramIcon, MicrosoftIcon } from "@/components/icons/brand-icons";
+import { OAuthMockModal, type OAuthProvider } from "@/components/login/oauth-mock-modal";
 
-const highlights = [
-  { icon: BarChart3, text: "Live campaign dashboards, refreshed automatically" },
-  { icon: Flame, text: "Swipe-to-shortlist Influencer-Tinder matching" },
-  { icon: Lightbulb, text: "AI recommendations from market & trend signals" },
+const SOCIAL_PROVIDERS: OAuthProvider[] = [
+  { id: "google", label: "Google", icon: GoogleIcon, accent: "#1a73e8" },
+  { id: "microsoft", label: "Microsoft", icon: MicrosoftIcon, accent: "#0067b8" },
+  { id: "facebook", label: "Facebook", icon: FacebookIcon, accent: "#1877f2" },
+  { id: "instagram", label: "Instagram", icon: InstagramIcon, accent: "#e1306c" },
 ];
 
+const DEMO_PASSWORD = "demo-1234";
+
+const PORTAL_OPTIONS: { value: PortalRole; label: string; icon: typeof Users }[] = [
+  { value: "customer", label: "Customer", icon: Users },
+  { value: "influencer", label: "Influencer", icon: Flame },
+];
+
+const DEFAULT_PORTAL: PortalRole = "customer";
+
 export default function LoginPage() {
-  const { status, login } = useAuth();
+  const { status, session, login } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState("lena.brandt@nordlicht-skincare.com");
-  const [password, setPassword] = useState("");
+  const [portal, setPortal] = useState<PortalRole>(DEFAULT_PORTAL);
+  const [email, setEmail] = useState(PORTAL_PROFILES[DEFAULT_PORTAL].email);
+  const [password, setPassword] = useState(DEMO_PASSWORD);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeProvider, setActiveProvider] = useState<OAuthProvider | null>(null);
+  const [oauthLoading, setOauthLoading] = useState(false);
+
+  const PortalIcon = PORTAL_OPTIONS.find((p) => p.value === portal)!.icon;
 
   useEffect(() => {
-    if (status === "authenticated") router.replace("/customer");
-  }, [status, router]);
+    if (status === "authenticated" && session) router.replace(PORTAL_HOME[session.portal]);
+  }, [status, session, router]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
-      setError("Enter a valid email address.");
+      setError("That email doesn't look right — double-check it.");
       return;
     }
     if (password.length < 4) {
-      setError("Enter your password (demo: any 4+ characters).");
+      setError("Password needs at least 4 characters.");
       return;
     }
     setLoading(true);
     try {
-      await login(email);
-      router.replace("/customer");
+      await login(email, portal);
+      router.replace(PORTAL_HOME[portal]);
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleDemo() {
-    setError(null);
-    setLoading(true);
+  function handlePortalChange(next: PortalRole) {
+    setPortal(next);
+    setEmail(PORTAL_PROFILES[next].email);
+    setPassword(DEMO_PASSWORD);
+  }
+
+  // No real OAuth here — this is a demo environment, so "continuing with" a
+  // provider opens a look-alike sign-in screen for that provider instead of
+  // actually redirecting anywhere. Confirming on it signs in as the
+  // currently selected portal's demo account.
+  async function handleOAuthContinue() {
+    if (!activeProvider) return;
+    setOauthLoading(true);
     try {
-      await login("lena.brandt@nordlicht-skincare.com");
-      router.replace("/customer");
+      await login(PORTAL_PROFILES[portal].email, portal);
+      router.replace(PORTAL_HOME[portal]);
     } finally {
-      setLoading(false);
+      setOauthLoading(false);
+      setActiveProvider(null);
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-1 bg-surface-0">
-      {/* Brand panel */}
-      <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[radial-gradient(120%_120%_at_0%_0%,#1c5cab_0%,#0d366b_60%,#0b2450_100%)] p-10 text-white lg:flex xl:p-14">
-        <div className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -left-16 size-96 rounded-full bg-[var(--series-7)]/30 blur-3xl" />
+    <div className="relative flex min-h-screen flex-1 items-center justify-center overflow-hidden bg-surface-0 px-4 py-12">
+      {/* Ambient background */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-60"
+          style={{
+            backgroundImage: "radial-gradient(var(--gridline) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+            maskImage: "radial-gradient(ellipse 65% 55% at 50% 38%, black 35%, transparent 100%)",
+            WebkitMaskImage: "radial-gradient(ellipse 65% 55% at 50% 38%, black 35%, transparent 100%)",
+          }}
+        />
+        <div className="absolute -left-32 -top-40 size-[34rem] rounded-full bg-accent/20 blur-[110px]" />
+        <div className="absolute -right-40 top-1/4 size-[30rem] rounded-full bg-[var(--series-7)]/20 blur-[110px]" />
+        <div className="absolute -bottom-40 left-1/3 size-[26rem] rounded-full bg-[var(--series-2)]/15 blur-[100px]" />
+      </div>
 
-        <div className="relative flex items-center gap-2.5">
-          <div className="flex size-9 items-center justify-center rounded-[10px] bg-white/15 backdrop-blur-sm">
-            <Compass className="size-5" />
-          </div>
-          <span className="text-[15px] font-semibold tracking-tight">Octagone</span>
-        </div>
-
-        <div className="relative flex flex-col gap-8">
-          <div>
-            <h1 className="max-w-md text-[32px] font-semibold leading-tight tracking-tight xl:text-[38px]">
-              Run influencer campaigns with total clarity.
-            </h1>
-            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-white/70">
-              One customer portal for monitoring, reporting, creator selection and AI-backed
-              recommendations — built for marketing teams who move fast.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3.5">
-            {highlights.map((h) => (
-              <div key={h.text} className="flex items-center gap-3">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/10">
-                  <h.icon className="size-4" />
-                </div>
-                <span className="text-[13.5px] text-white/85">{h.text}</span>
-              </div>
+      {/* Portal switcher — top-right corner, outside the card */}
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+        <div className="relative">
+          <label htmlFor="portal" className="sr-only">
+            Portal
+          </label>
+          <PortalIcon className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-text-muted" />
+          <select
+            id="portal"
+            value={portal}
+            onChange={(e) => handlePortalChange(e.target.value as PortalRole)}
+            className="h-9 appearance-none rounded-full border border-border-hairline bg-surface-1/90 py-1.5 pl-8 pr-8 text-[12.5px] font-medium text-text-primary shadow-[var(--shadow-sm)] backdrop-blur-sm outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20"
+          >
+            {PORTAL_OPTIONS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
             ))}
-          </div>
-        </div>
-
-        <div className="relative flex items-center gap-2 text-[12.5px] text-white/50">
-          <ShieldCheck className="size-4" />
-          SOC 2-style access controls · Demo environment
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-muted" />
         </div>
       </div>
 
-      {/* Form panel */}
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 sm:px-10">
-        <div className="w-full max-w-sm">
-          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <div className="flex size-9 items-center justify-center rounded-[10px] bg-accent text-white">
-              <Compass className="size-5" />
-            </div>
-            <span className="text-[15px] font-semibold tracking-tight text-text-primary">Octagone</span>
+      <div className="relative w-full max-w-[400px]">
+        <div className="mb-7 flex flex-col items-center gap-3">
+          <div className="flex size-11 items-center justify-center rounded-2xl bg-accent text-white shadow-[var(--shadow-md)]">
+            <Compass className="size-6" />
           </div>
+          <Badge tone="accent">Demo environment</Badge>
+        </div>
 
-          <div className="mb-7">
-            <h2 className="text-[22px] font-semibold tracking-tight text-text-primary">Welcome back</h2>
-            <p className="mt-1.5 text-[13.5px] text-text-secondary">
-              Sign in to your customer portal to view campaign performance.
+        <div className="rounded-[var(--radius-xl)] border border-border-hairline bg-surface-1/90 p-7 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-8">
+          <div className="mb-6 text-center">
+            <h1 className="text-[23px] font-semibold tracking-tight text-text-primary">Sign in to Octagone</h1>
+            <p className="mt-1.5 text-[13.5px] leading-relaxed text-text-secondary">
+              Pick your portal — we&apos;ll fill in a demo login for you.
             </p>
           </div>
 
@@ -140,7 +169,7 @@ export default function LoginPage() {
                 <label htmlFor="password" className="text-[13px] font-medium text-text-primary">
                   Password
                 </label>
-                <span className="text-[12px] text-text-muted">Demo: any password</span>
+                <span className="text-[12px] text-text-muted">Any password works here</span>
               </div>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-text-muted" />
@@ -164,33 +193,45 @@ export default function LoginPage() {
 
             <Button type="submit" size="lg" disabled={loading} className="mt-1 w-full">
               {loading ? <Loader2 className="size-4 animate-spin" /> : null}
-              {loading ? "Signing in…" : "Sign in"}
+              {loading ? "Taking you there…" : "Sign in"}
             </Button>
 
             <div className="relative my-1 flex items-center gap-3 text-[11px] uppercase tracking-wide text-text-muted">
               <div className="h-px flex-1 bg-border-hairline" />
-              or
+              or continue with
               <div className="h-px flex-1 bg-border-hairline" />
             </div>
 
-            <Button
-              type="button"
-              variant="secondary"
-              size="lg"
-              disabled={loading}
-              onClick={handleDemo}
-              className={cn("w-full")}
-            >
-              <Sparkles className="size-4 text-accent" />
-              Continue with demo account
-            </Button>
+            <div className="grid grid-cols-4 gap-2">
+              {SOCIAL_PROVIDERS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => setActiveProvider(p)}
+                  aria-label={`Continue with ${p.label}`}
+                  className="flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-border-strong bg-surface-1 transition-colors hover:bg-surface-hover disabled:pointer-events-none disabled:opacity-50"
+                >
+                  <p.icon className="size-5" />
+                </button>
+              ))}
+            </div>
           </form>
-
-          <p className="mt-8 text-center text-[12.5px] text-text-muted">
-            Trouble signing in? Contact your Octagone account manager.
-          </p>
         </div>
+
+        <p className="mt-6 text-center text-[12.5px] text-text-muted">
+          Need access? Ask your Octagone contact.
+        </p>
       </div>
+
+      <OAuthMockModal
+        provider={activeProvider}
+        profileName={PORTAL_PROFILES[portal].name}
+        profileEmail={PORTAL_PROFILES[portal].email}
+        loading={oauthLoading}
+        onCancel={() => setActiveProvider(null)}
+        onContinue={handleOAuthContinue}
+      />
     </div>
   );
 }
