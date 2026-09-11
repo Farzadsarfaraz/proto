@@ -1,11 +1,14 @@
 import type {
   ActionComponent,
   AppNotification,
+  AudienceDemographics,
   BriefingDoc,
   Campaign,
   ContentReviewItem,
   Influencer,
   Recommendation,
+  ScheduledPost,
+  ScheduledPostType,
   SeriesPoint,
   SimilarCampaign,
   TeamMember,
@@ -197,6 +200,51 @@ function photoHues(seedIndex: number): number[] {
   return [0, 55, 110, 165, 220, 275].map((offset) => (base + offset) % 360);
 }
 
+const AUDIENCE_COUNTRIES = [
+  "Germany",
+  "Austria",
+  "Switzerland",
+  "Netherlands",
+  "France",
+  "United Kingdom",
+  "Poland",
+  "Denmark",
+];
+
+function buildAudience(): AudienceDemographics {
+  const femalePct = randInt(35, 82);
+  const malePct = randInt(10, 100 - femalePct);
+  const otherPct = Math.max(0, 100 - femalePct - malePct);
+
+  const bands = [randInt(4, 14), randInt(22, 38), randInt(24, 34), randInt(12, 22)];
+  const bandSum = bands.reduce((s, v) => s + v, 0);
+  const lastBand = Math.max(2, 100 - bandSum);
+
+  const countries = [...AUDIENCE_COUNTRIES].sort(() => rand() - 0.5).slice(0, 4);
+  const shares = [randInt(38, 58), randInt(14, 24), randInt(8, 16)];
+  const shareSum = shares.reduce((s, v) => s + v, 0);
+  const lastShare = Math.max(4, 100 - shareSum);
+
+  return {
+    genderSplit: [
+      { label: "Female", value: femalePct, color: "var(--series-5)" },
+      { label: "Male", value: malePct, color: "var(--series-1)" },
+      { label: "Other", value: otherPct, color: "var(--series-4)" },
+    ].filter((g) => g.value > 0),
+    ageBands: [
+      { label: "13–17", value: bands[0] },
+      { label: "18–24", value: bands[1] },
+      { label: "25–34", value: bands[2] },
+      { label: "35–44", value: bands[3] },
+      { label: "45+", value: lastBand },
+    ],
+    topCountries: countries.map((label, i) => ({
+      label,
+      value: i < shares.length ? shares[i] : lastShare,
+    })),
+  };
+}
+
 export const INFLUENCERS: Influencer[] = Array.from({ length: 24 }).map((_, i) => {
   const first = pick(FIRST_NAMES);
   const last = pick(LAST_NAMES);
@@ -225,6 +273,57 @@ export const INFLUENCERS: Influencer[] = Array.from({ length: 24 }).map((_, i) =
       likes: randInt(200, 24000),
       caption: PHOTO_CAPTIONS[(i + p) % PHOTO_CAPTIONS.length],
     })),
+    audience: buildAudience(),
+  };
+});
+
+const POST_TYPES_BY_PLATFORM: Record<Influencer["platform"] | "X", ScheduledPostType[]> = {
+  Instagram: ["Reel", "Story", "Post"],
+  TikTok: ["Video"],
+  YouTube: ["Video"],
+  Pinterest: ["Pin"],
+  X: ["Post"],
+};
+
+const CAPTION_TEMPLATES = [
+  "Morning skin routine feat. the new serum — full glow reveal by day 7 ✨",
+  "Unboxing the latest drop + first impressions",
+  "GRWM: everyday base routine with today's hero product",
+  "Ingredient breakdown — what's actually inside",
+  "Weekend reset routine, sponsored by the brand",
+  "Q&A: your most-asked questions about the collab",
+];
+
+export const SCHEDULED_POSTS: ScheduledPost[] = Array.from({ length: 42 }).map((_, i) => {
+  const inf = pick(INFLUENCERS);
+  const campaign = pick(CAMPAIGNS);
+  const offsetDays = randInt(-21, 35);
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  d.setHours(randInt(8, 20), pick([0, 15, 30, 45]), 0, 0);
+
+  const isPast = d.getTime() < Date.now();
+  const status =
+    offsetDays < -1
+      ? pick<ScheduledPost["status"]>(["posted", "posted", "posted", "missed"])
+      : isPast
+        ? "live"
+        : "scheduled";
+
+  const types = POST_TYPES_BY_PLATFORM[inf.platform] ?? ["Post"];
+
+  return {
+    id: `sp-${i + 1}`,
+    influencerId: inf.id,
+    influencerName: inf.name,
+    platform: inf.platform,
+    campaignId: campaign.id,
+    campaign: campaign.name,
+    scheduledAt: d.toISOString(),
+    type: pick(types),
+    status,
+    caption: pick(CAPTION_TEMPLATES),
+    thumbnailHue: randInt(0, 360),
   };
 });
 

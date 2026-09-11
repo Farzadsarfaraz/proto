@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Heart, MapPin, Sparkles, ThumbsDown, ThumbsUp, X } from "lucide-react";
+import { Globe2, Heart, MapPin, Sparkles, ThumbsDown, ThumbsUp, Users, X } from "lucide-react";
 import type { Influencer } from "@/lib/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { DonutChart } from "@/components/charts/donut-chart";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 import { formatCompactNumber, formatPercent } from "@/lib/utils";
 
@@ -106,6 +108,44 @@ export function InfluencerProfileModal({ influencer, onClose, onShortlist, onPas
               <div>
                 <p className="text-[15px] font-semibold text-text-primary">{influencer.priceRange}</p>
                 <p className="text-[11px] text-text-muted">Est. rate</p>
+              </div>
+            </div>
+
+            <div className="mt-5 border-t border-border-hairline pt-4">
+              <h3 className="mb-3 flex items-center gap-1.5 text-[13px] font-semibold text-text-primary">
+                <Users className="size-3.5" /> Audience
+              </h3>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="mb-1.5 text-[11.5px] font-medium text-text-muted">Gender split</p>
+                  <DonutChart data={influencer.audience.genderSplit} height={120} />
+                </div>
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <p className="mb-1.5 text-[11.5px] font-medium text-text-muted">Age bands</p>
+                    <div className="flex flex-col gap-1.5">
+                      {influencer.audience.ageBands.map((b) => (
+                        <div key={b.label} className="flex items-center gap-2">
+                          <span className="w-11 shrink-0 text-[11px] text-text-secondary">{b.label}</span>
+                          <Progress value={b.value} className="h-1.5" />
+                          <span className="w-8 shrink-0 text-right text-[11px] tabular-nums text-text-muted">{b.value}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-1.5 flex items-center gap-1 text-[11.5px] font-medium text-text-muted">
+                      <Globe2 className="size-3" /> Top countries
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {influencer.audience.topCountries.map((c) => (
+                        <span key={c.label} className="rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-text-secondary">
+                          {c.label} · {c.value}%
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

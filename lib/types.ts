@@ -36,6 +36,12 @@ export interface InfluencerPhoto {
   caption: string;
 }
 
+export interface AudienceDemographics {
+  genderSplit: { label: string; value: number; color: string }[];
+  ageBands: { label: string; value: number }[];
+  topCountries: { label: string; value: number }[];
+}
+
 export interface Influencer {
   id: string;
   name: string;
@@ -52,6 +58,7 @@ export interface Influencer {
   tags: string[];
   bio: string;
   photos: InfluencerPhoto[];
+  audience: AudienceDemographics;
 }
 
 export interface ReviewComment {
@@ -133,6 +140,23 @@ export interface AppNotification {
   at: string;
   read: boolean;
   href?: string;
+}
+
+export type ScheduledPostStatus = "scheduled" | "posted" | "live" | "missed";
+export type ScheduledPostType = "Reel" | "Story" | "Video" | "Post" | "Pin";
+
+export interface ScheduledPost {
+  id: string;
+  influencerId: string;
+  influencerName: string;
+  platform: Platform;
+  campaignId: string;
+  campaign: string;
+  scheduledAt: string;
+  type: ScheduledPostType;
+  status: ScheduledPostStatus;
+  caption: string;
+  thumbnailHue: number;
 }
 
 export type TeamRole = "Owner" | "Editor" | "Viewer";

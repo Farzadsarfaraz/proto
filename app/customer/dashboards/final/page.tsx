@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Lock } from "lucide-react";
+import { Download, Lock, Printer } from "lucide-react";
 import { useCampaign } from "@/lib/campaign-context";
 import { useCampaignMetrics } from "@/lib/use-campaign-metrics";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -44,11 +44,24 @@ export default function FinalDashboard() {
         title="Final Dashboard"
         description="Data pulled and locked on the campaign's set reporting date — the figures of record for stakeholder sign-off."
         action={
-          <Button variant="secondary" onClick={handleExport}>
-            <Download className="size-4" /> Export report
-          </Button>
+          <div className="flex items-center gap-2 print:hidden">
+            <Button variant="secondary" onClick={handleExport}>
+              <Download className="size-4" /> Export data (.txt)
+            </Button>
+            <Button onClick={() => window.print()}>
+              <Printer className="size-4" /> Print / Save as PDF
+            </Button>
+          </div>
         }
       />
+
+      <div className="mb-6 hidden items-center justify-between border-b border-border-hairline pb-4 print:flex">
+        <div>
+          <p className="text-[15px] font-semibold text-text-primary">Octagone</p>
+          <p className="text-[12px] text-text-muted">Final campaign report</p>
+        </div>
+        <p className="text-[12px] text-text-muted">Generated {formatDate(new Date())}</p>
+      </div>
 
       <div
         className={

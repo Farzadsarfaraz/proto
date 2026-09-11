@@ -20,6 +20,7 @@ import { ACTION_COMPONENTS, BRIEFING_DOCS, CONTENT_REVIEW_ITEMS, INFLUENCERS } f
 import type { ActionComponent, BriefingDoc, ContentReviewItem, Influencer } from "@/lib/types";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/lib/toast";
+import { useInfluencerPreview } from "@/lib/influencer-preview";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +29,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { InfluencerProfileModal } from "@/components/customer/influencer-profile-modal";
 import { cn, formatCompactNumber, formatPercent, formatRelativeTime } from "@/lib/utils";
 
 const icons: Record<ActionComponent["icon"], typeof Flame> = {
@@ -119,7 +119,7 @@ function SetSelectionSection() {
     { name: "Conversion Specialists", size: 4, followerRange: "18k–80k", focus: "Conversion", influencers: INFLUENCERS.slice(11, 15) },
   ];
   const [viewingSet, setViewingSet] = useState<CreatorSet | null>(null);
-  const [viewingInfluencer, setViewingInfluencer] = useState<Influencer | null>(null);
+  const { open: openInfluencerPreview } = useInfluencerPreview();
   const { push } = useToast();
 
   function handleUseSet(set: CreatorSet) {
@@ -156,10 +156,9 @@ function SetSelectionSection() {
         onUse={handleUseSet}
         onViewInfluencer={(inf) => {
           setViewingSet(null);
-          setViewingInfluencer(inf);
+          openInfluencerPreview(inf);
         }}
       />
-      <InfluencerProfileModal influencer={viewingInfluencer} onClose={() => setViewingInfluencer(null)} />
     </>
   );
 }

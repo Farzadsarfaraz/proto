@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useFocusTrap } from "@/lib/use-focus-trap";
 
@@ -28,7 +29,13 @@ export function Modal({ open, onClose, title, description, children }: ModalProp
 
   if (!open) return null;
 
-  return (
+  // Portalled to <body>: every page wraps its content in an `animate-fade-in`
+  // element, and `animation-fill-mode: both` leaves a permanent (identity)
+  // transform on it after the animation ends. A non-"none" transform makes
+  // that ancestor the containing block for `position: fixed` descendants, so
+  // without the portal this modal would be positioned relative to the page
+  // content instead of the viewport — offset, clipped, and scrolling away.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
       <div
@@ -52,6 +59,7 @@ export function Modal({ open, onClose, title, description, children }: ModalProp
         {description && <p className="mt-1 text-[13px] text-text-secondary">{description}</p>}
         <div className="mt-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

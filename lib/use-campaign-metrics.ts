@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { buildSeries, createRng, hashSeed } from "./mock-data";
+import { buildSeries, createRng, hashSeed, INFLUENCERS } from "./mock-data";
 import type { Campaign, KpiSnapshot } from "./types";
 
 function seriesTotal(series: { value: number }[]) {
@@ -55,6 +55,18 @@ export interface CampaignMetrics {
     viewsSeries: { date: string; value: number }[];
     dataCompleteness: number;
     missingSources: { name: string; status: "synced" | "pending" | "delayed" }[];
+  };
+  budget: {
+    spent: KpiSnapshot;
+    remaining: KpiSnapshot;
+    utilization: KpiSnapshot;
+    costPerConversion: KpiSnapshot;
+    timelineElapsedPct: number;
+    paceDeltaPct: number;
+    paceStatus: "ahead" | "on_pace" | "behind";
+    dailySpend: { date: string; actual: number; planned: number }[];
+    byPlatform: { label: string; value: number; color: string }[];
+    byInfluencer: { label: string; value: number; color?: string }[];
   };
 }
 
@@ -116,6 +128,55 @@ export function buildCampaignMetrics(campaign: Campaign, days: DateRangeDays = 3
   }));
 
   const dataCompleteness = Math.round(62 + rng.next() * 30);
+
+  // Budget pacing: compare % of budget spent against % of the campaign
+  // timeline elapsed. A campaign that hasn't started yet reads as 0%
+  // elapsed; one that's ended reads as 100%, regardless of "days" window.
+  const timelineStartMs = new Date(campaign.startDate).getTime();
+  const timelineEndMs = new Date(campaign.endDate).getTime();
+  const totalDurationDays = Math.max(1, Math.round((timelineEndMs - timelineStartMs) / 86_400_000));
+  const timelineElapsedPct = Math.round(
+    Math.max(0, Math.min(100, ((Date.now() - timelineStartMs) / (timelineEndMs - timelineStartMs)) * 100))
+  );
+
+  const paceNoise = Number(rng.range(-9, 9).toFixed(1));
+  const spentPct = Math.max(
+    0,
+    Math.min(100, Math.round(timelineElapsedPct + (timelineElapsedPct > 0 ? paceNoise : Math.abs(paceNoise) * 0.3)))
+  );
+  const spent = Math.round(campaign.budget * (spentPct / 100));
+  const remaining = campaign.budget - spent;
+  const paceDeltaPct = Number((spentPct - timelineElapsedPct).toFixed(1));
+  const paceStatus: "ahead" | "on_pace" | "behind" = paceDeltaPct > 6 ? "ahead" : paceDeltaPct < -6 ? "behind" : "on_pace";
+
+  const idealDailyRate = campaign.budget / totalDurationDays;
+  const spendTrend = idealDailyRate * (paceDeltaPct / 100) * 0.6;
+  const spendSeriesRaw = buildSeries(`${id}-spend-${days}`, days, idealDailyRate, idealDailyRate * 0.32, spendTrend);
+  const dailySpend = spendSeriesRaw.map((p) => ({
+    date: p.date,
+    actual: p.value,
+    planned: Math.round(idealDailyRate),
+  }));
+
+  const byPlatformSpend = platformSplit.map((p) => ({
+    label: p.label,
+    value: Math.round(spent * (p.value / (reach || 1))),
+    color: p.color,
+  }));
+
+  // Deterministic slice of the influencer roster so the same campaign
+  // always lists the same "top spenders", without needing a real spend ledger.
+  const spendStart = hashSeed(`${id}-spend-roster`) % 10;
+  const spendInfluencers = INFLUENCERS.slice(spendStart, spendStart + Math.min(6, campaign.influencerCount || 6));
+  const spendWeights = spendInfluencers.map((_, i) => Math.pow(0.78, i) * (0.85 + rng.next() * 0.3));
+  const spendWeightSum = spendWeights.reduce((s, w) => s + w, 0) || 1;
+  const byInfluencer = spendInfluencers.map((inf, i) => ({
+    label: inf.name,
+    value: Math.round(spent * (spendWeights[i] / spendWeightSum) * 0.55),
+    color: platformColors[inf.platform],
+  }));
+
+  const costPerConversion = conversions > 0 ? Number((spent / conversions).toFixed(2)) : 0;
 
   return {
     awareness: {
@@ -252,6 +313,18 @@ export function buildCampaignMetrics(campaign: Campaign, days: DateRangeDays = 3
         { name: "YouTube Analytics", status: dataCompleteness > 92 ? "synced" : "delayed" },
         { name: "Shopify conversion pixel", status: dataCompleteness > 75 ? "synced" : "pending" },
       ],
+    },
+    budget: {
+      spent: { label: "Spent to date", value: spent, unit: "currency", delta: deltaFor(`${id}-budget-spent-d`, 12), goodDirection: "down" },
+      remaining: { label: "Remaining budget", value: remaining, unit: "currency", delta: deltaFor(`${id}-budget-remaining-d`, 10), goodDirection: "up" },
+      utilization: { label: "Budget utilization", value: spentPct, unit: "percent", delta: deltaFor(`${id}-budget-util-d`, 8), goodDirection: "down" },
+      costPerConversion: { label: "Cost per conversion", value: costPerConversion, unit: "currency", delta: deltaFor(`${id}-cpc-d`, 10), goodDirection: "down" },
+      timelineElapsedPct,
+      paceDeltaPct,
+      paceStatus,
+      dailySpend,
+      byPlatform: byPlatformSpend,
+      byInfluencer,
     },
   };
 }

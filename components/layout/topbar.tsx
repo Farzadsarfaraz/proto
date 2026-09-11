@@ -3,12 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, LogOut, Menu, Plus, Settings, User } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Plus, Rows3, Search, Settings, User } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useCampaign } from "@/lib/campaign-context";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { NotificationsMenu } from "@/components/layout/notifications-menu";
+import { CommandPalette } from "@/components/layout/command-palette";
 import { cn } from "@/lib/utils";
 
 const statusTone = {
@@ -65,6 +66,13 @@ function CampaignSwitcher() {
             </button>
           ))}
           <div className="my-1 h-px bg-border-hairline" />
+          <Link
+            href="/customer/campaigns"
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-left text-[13px] font-medium text-text-secondary hover:bg-surface-hover"
+          >
+            <Rows3 className="size-4" /> View all campaigns
+          </Link>
           <Link
             href="/customer/campaigns/new"
             onClick={() => setOpen(false)}
@@ -140,17 +148,43 @@ function UserMenu() {
   );
 }
 
-export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
+function SearchTrigger({ onOpen }: { onOpen: () => void }) {
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border-hairline bg-surface-1/85 px-4 backdrop-blur-sm sm:px-6">
+    <button
+      onClick={onOpen}
+      className="hidden items-center gap-2 rounded-[var(--radius-sm)] border border-border-hairline bg-surface-1 px-3 py-1.5 text-[13px] text-text-muted transition-colors hover:bg-surface-hover hover:text-text-secondary sm:flex"
+    >
+      <Search className="size-3.5" />
+      <span className="w-32 text-left">Search…</span>
+      <kbd className="rounded border border-border-strong bg-surface-2 px-1.5 py-0.5 text-[10.5px] font-medium text-text-muted">
+        ⌘K
+      </kbd>
+    </button>
+  );
+}
+
+export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  return (
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border-hairline bg-surface-1/85 px-4 backdrop-blur-sm print:hidden sm:px-6">
       <button onClick={onMenuClick} className="flex size-9 items-center justify-center rounded-[var(--radius-sm)] hover:bg-surface-hover lg:hidden">
         <Menu className="size-5" />
       </button>
       <CampaignSwitcher />
       <div className="ml-auto flex items-center gap-2">
+        <SearchTrigger onOpen={() => setSearchOpen(true)} />
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="flex size-9 items-center justify-center rounded-full text-text-secondary hover:bg-surface-hover hover:text-text-primary sm:hidden"
+          aria-label="Search"
+        >
+          <Search className="size-[18px]" />
+        </button>
         <NotificationsMenu />
         <UserMenu />
       </div>
+      <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} onOpen={() => setSearchOpen(true)} />
     </header>
   );
 }

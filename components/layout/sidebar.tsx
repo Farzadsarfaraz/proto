@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  Briefcase,
+  CalendarDays,
   ClipboardCheck,
   Compass,
   Eye,
@@ -14,6 +16,7 @@ import {
   MousePointerClick,
   Sparkles,
   Target,
+  Wallet,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,11 +28,13 @@ const dashboards = [
   { href: "/customer/dashboards/engagement", label: "Engagement", icon: Heart },
   { href: "/customer/dashboards/traffic", label: "Traffic", icon: MousePointerClick },
   { href: "/customer/dashboards/conversion", label: "Conversion", icon: Target },
+  { href: "/customer/dashboards/budget", label: "Budget", icon: Wallet },
 ];
 
 const tools = [
   { href: "/customer/action-center", label: "Action Center", icon: Sparkles },
   { href: "/customer/influencer-tinder", label: "Influencer-Tinder", icon: Flame },
+  { href: "/customer/calendar", label: "Content Calendar", icon: CalendarDays },
   { href: "/customer/recommendations", label: "Recommendations", icon: Lightbulb },
 ];
 
@@ -54,8 +59,9 @@ function NavLink({ href, label, icon: Icon, onNavigate }: { href: string; label:
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-4">
-      <div>
+      <div className="flex flex-col gap-0.5">
         <NavLink href="/customer" label="Overview" icon={LayoutGrid} onNavigate={onNavigate} />
+        <NavLink href="/customer/campaigns" label="All Campaigns" icon={Briefcase} onNavigate={onNavigate} />
       </div>
       <div>
         <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-text-muted">Customer Dashboards</p>
@@ -79,7 +85,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 export function Sidebar() {
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-border-hairline bg-surface-1 lg:flex">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-border-hairline bg-surface-1 print:hidden lg:flex">
       <div className="flex h-16 items-center gap-2.5 border-b border-border-hairline px-5">
         <div className="flex size-8 items-center justify-center rounded-[10px] bg-accent text-white">
           <Compass className="size-[18px]" />
@@ -97,7 +103,7 @@ export function Sidebar() {
 export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
+    <div className="fixed inset-0 z-50 print:hidden lg:hidden">
       <div className="absolute inset-0 bg-black/40 animate-fade-in" onClick={onClose} />
       <aside className="absolute inset-y-0 left-0 flex w-72 flex-col bg-surface-1 shadow-[var(--shadow-lg)] animate-fade-in">
         <div className="flex h-16 items-center justify-between border-b border-border-hairline px-5">

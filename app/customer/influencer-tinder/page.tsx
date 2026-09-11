@@ -5,12 +5,12 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import { Eye, MapPin, RotateCcw, Search, Sparkles, SlidersHorizontal, Star, ThumbsDown, ThumbsUp, X } from "lucide-react";
 import { INFLUENCERS, NICHES } from "@/lib/mock-data";
 import type { Influencer, Platform } from "@/lib/types";
+import { useInfluencerPreview } from "@/lib/influencer-preview";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { InfluencerProfileModal } from "@/components/customer/influencer-profile-modal";
 import { cn, formatCompactNumber, formatPercent } from "@/lib/utils";
 
 const PLATFORM_OPTIONS: Platform[] = ["Instagram", "TikTok", "YouTube", "Pinterest"];
@@ -273,7 +273,7 @@ export default function InfluencerTinderPage() {
   const [history, setHistory] = useState<Decision[]>([]);
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const [viewingProfile, setViewingProfile] = useState<Influencer | null>(null);
+  const { influencer: viewingProfile, open: openProfile } = useInfluencerPreview();
   const startX = useRef(0);
   const exitDirection = useRef<"left" | "right" | null>(null);
   // Skips the persist effect's very first run on mount — that run still
@@ -320,7 +320,6 @@ export default function InfluencerTinderPage() {
 
   const current = remaining[0];
   const next = remaining[1];
-  const viewingCurrentCard = viewingProfile?.id === current?.id;
   const done = remaining.length === 0;
   const noMatches = filteredPool.length === 0;
 
@@ -366,7 +365,7 @@ export default function InfluencerTinderPage() {
       else if (e.key === "ArrowLeft") decide("left");
       else if ((e.key === "Enter" || e.key === " ") && current) {
         e.preventDefault();
-        setViewingProfile(current);
+        openProfile(current, { onShortlist: () => decide("right"), onPass: () => decide("left") });
       }
     }
     document.addEventListener("keydown", onKey);
@@ -421,7 +420,7 @@ export default function InfluencerTinderPage() {
                     dragX={dragX}
                     dragging={dragging}
                     onPointerDown={handlePointerDown}
-                    onViewProfile={setViewingProfile}
+                    onViewProfile={(inf) => openProfile(inf, { onShortlist: () => decide("right"), onPass: () => decide("left") })}
                   />
                 )}
               </>
@@ -473,7 +472,7 @@ export default function InfluencerTinderPage() {
                 .map((inf) => (
                   <button
                     key={inf.id}
-                    onClick={() => setViewingProfile(inf)}
+                    onClick={() => openProfile(inf)}
                     className="flex items-center gap-2.5 rounded-[var(--radius-sm)] p-1 text-left hover:bg-surface-hover"
                   >
                     <Avatar name={inf.name} src={inf.photoUrl} size={30} />
@@ -501,13 +500,6 @@ export default function InfluencerTinderPage() {
           </div>
         </div>
       </div>
-
-      <InfluencerProfileModal
-        influencer={viewingProfile}
-        onClose={() => setViewingProfile(null)}
-        onShortlist={viewingCurrentCard ? () => decide("right") : undefined}
-        onPass={viewingCurrentCard ? () => decide("left") : undefined}
-      />
     </div>
   );
 }
