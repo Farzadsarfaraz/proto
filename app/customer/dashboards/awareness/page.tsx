@@ -26,6 +26,7 @@ export default function AwarenessDashboard() {
         eyebrow="Customer Dashboards"
         title="Awareness Dashboard"
         description="How many people saw the campaign, how often, and where — reach, impressions and share of voice."
+        info="Wie viele Menschen die Kampagne überhaupt gesehen haben — Reichweite, Impressions und wie oft im Schnitt jede Person den Content gesehen hat. Der erste Schritt im Trichter: gesehen, noch nicht geklickt."
         action={<DateRangeFilter value={days} onChange={setDays} />}
       />
 

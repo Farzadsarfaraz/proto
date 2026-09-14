@@ -379,6 +379,7 @@ export default function InfluencerTinderPage() {
         eyebrow="Take Action"
         title="Influencer-Tinder"
         description="Swipe right to shortlist a creator, left to pass. AI-ranked by fit with your campaign's audience."
+        info="Wische durch KI-vorgeschlagene Creator — rechts (oder ← →-Tasten) für Shortlist, links zum Überspringen. Passt du hier vor, landen die Ausgewählten später bei Set Selection."
       />
 
       <FilterBar filters={filters} onChange={setFilters} matchCount={filteredPool.length} />

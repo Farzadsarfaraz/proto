@@ -26,6 +26,7 @@ export default function TrafficDashboard() {
         eyebrow="Customer Dashboards"
         title="Traffic Dashboard"
         description="How campaign content moved people to your site — clicks, sessions and click-through rate."
+        info="Wie viele Leute vom Content tatsächlich auf die Website geklickt haben — nicht nur gesehen, sondern hingegangen. Der Schritt zwischen Awareness (gesehen) und Conversion (gekauft)."
         action={<DateRangeFilter value={days} onChange={setDays} />}
       />
 

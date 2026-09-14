@@ -87,7 +87,12 @@ export default function NewCampaignPage() {
 
   return (
     <div className="mx-auto max-w-2xl animate-fade-in">
-      <PageHeader eyebrow="Take Action" title="New campaign" description="Set the basics, then choose which Action Center tools are on." />
+      <PageHeader
+        eyebrow="Take Action"
+        title="New campaign"
+        description="Set the basics, then choose which Action Center tools are on."
+        info="Eine neue Kampagne anlegen: Name, Ziel, Plattformen, Budget und Zeitraum — plus welche Action-Center-Tools (Tinder, Set Selection, Content Review, Briefings) von Anfang an aktiv sein sollen."
+      />
 
       <div className="mb-7 flex items-center gap-2">
         {STEPS.map((label, i) => (

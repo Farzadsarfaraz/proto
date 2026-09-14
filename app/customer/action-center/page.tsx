@@ -470,6 +470,7 @@ export default function ActionCenterPage() {
         eyebrow="Take Action"
         title="Customer Action Center"
         description="Every actionable component your team can use for this campaign — enable or disable each one from campaign creation."
+        info="Alles, was du selbst tun kannst: Influencer auswählen (Tinder oder fertige Sets), eingereichten Content freigeben oder Änderungen anfordern, und Briefing-Dokumente hochladen."
       />
 
       <section className="mb-9">

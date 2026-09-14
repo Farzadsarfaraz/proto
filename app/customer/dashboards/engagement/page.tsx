@@ -27,6 +27,7 @@ export default function EngagementDashboard() {
         eyebrow="Customer Dashboards"
         title="Engagement Dashboard"
         description="How the audience interacted with the content — likes, comments, saves and engagement rate."
+        info="Wie die Zielgruppe auf den Content reagiert hat — Likes, Kommentare, Saves und die Engagement-Rate. Zeigt, ob der Content nicht nur gesehen, sondern auch als relevant empfunden wurde."
         action={<DateRangeFilter value={days} onChange={setDays} />}
       />
 

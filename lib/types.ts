@@ -28,6 +28,7 @@ export interface KpiSnapshot {
   delta: number;
   goodDirection: "up" | "down";
   series?: SeriesPoint[];
+  info?: string;
 }
 
 export interface InfluencerPhoto {

@@ -95,6 +95,7 @@ export default function CampaignsPage() {
       <PageHeader
         title="All Campaigns"
         description={`${campaigns.length} campaign${campaigns.length === 1 ? "" : "s"} across your account — select one to make it active.`}
+        info="Alle deine Kampagnen auf einen Blick, mit Status und Budget-Fortschritt. Klick auf eine Kampagne, um sie zur aktiven zu machen — die Dashboards und Action-Center-Seiten beziehen sich dann auf diese."
         action={
           <Button onClick={() => router.push("/customer/campaigns/new")}>
             <Plus className="size-4" /> New campaign

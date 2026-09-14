@@ -45,6 +45,7 @@ export default function CustomerOverview() {
         eyebrow={campaign.name}
         title={`Welcome back, ${firstName}`}
         description={`Here's how ${campaign.name} is performing across ${campaign.platforms.join(" and ")}, reporting on ${formatDate(campaign.reportingDate)}.`}
+        info="Deine Startseite: die wichtigsten Zahlen der aktiven Kampagne auf einen Blick, plus Schnellzugriff auf alle Dashboards und offene Aufgaben."
       />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

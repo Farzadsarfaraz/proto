@@ -25,6 +25,7 @@ export default function ConversionDashboard() {
         eyebrow="Customer Dashboards"
         title="Conversion Dashboard"
         description="From impression to purchase — the full funnel, conversion rate and attributed revenue."
+        info="Der letzte Schritt im Trichter: wie viele Website-Besucher tatsächlich gekauft haben, und wie viel Umsatz und Rendite (ROAS) die Kampagne gebracht hat."
         action={<DateRangeFilter value={days} onChange={setDays} />}
       />
 

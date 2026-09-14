@@ -181,6 +181,7 @@ export default function RecommendationsPage() {
         eyebrow="Take Action"
         title="Customer Recommendation Center"
         description="Social listening, trends and anonymised benchmark campaigns, distilled into AI-backed ideas for your next move."
+        info="KI-Vorschläge für deine nächste Kampagne — basierend auf aktuellen Trends, Markt-Kennzahlen und anonymisierten, ähnlichen Kampagnen anderer Kunden."
       />
 
       <section className="mb-9">

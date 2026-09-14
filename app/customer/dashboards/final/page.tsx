@@ -43,6 +43,7 @@ export default function FinalDashboard() {
         eyebrow="Customer Dashboards"
         title="Final Dashboard"
         description="Data pulled and locked on the campaign's set reporting date — the figures of record for stakeholder sign-off."
+        info="Der offizielle Abschlussbericht. Sobald das Reporting-Datum erreicht ist, werden die Zahlen fixiert und ändern sich nicht mehr — zum Ausdrucken oder Weiterleiten an Stakeholder."
         action={
           <div className="flex items-center gap-2 print:hidden">
             <Button variant="secondary" onClick={handleExport}>

@@ -48,6 +48,7 @@ export default function BudgetDashboard() {
         eyebrow="Customer Dashboards"
         title="Budget Dashboard"
         description="Spend pacing, allocation by platform and creator, and where budget is actually going."
+        info="Wie schnell das Budget ausgegeben wird, verglichen mit der Kampagnenlaufzeit — und wohin das Geld geht (Plattform, einzelne Creator)."
         action={<DateRangeFilter value={days} onChange={setDays} />}
       />
 

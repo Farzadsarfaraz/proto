@@ -68,6 +68,7 @@ export default function MonitoringDashboard() {
         eyebrow="Customer Dashboards"
         title="Monitoring Dashboard"
         description="Auto-refreshing KPIs pulled directly from connected platforms, with a live estimate of how much reporting data is still missing."
+        info="Zeigt, wie die Kampagne gerade läuft — live, aber vorläufig. Nicht alle Plattformen liefern ihre Zahlen sofort, deshalb siehst du auch, wie viel Prozent der Daten noch fehlen. Der endgültige Stand kommt später im Final Dashboard."
         action={
           <div className="flex flex-wrap items-center gap-3">
             <DateRangeFilter value={days} onChange={setDays} />
@@ -98,18 +99,32 @@ export default function MonitoringDashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <StatTile label="Views" value={live_views} delta={metrics.monitoring.views.delta} series={metrics.monitoring.views.series} />
+            <StatTile
+              label="Views"
+              value={live_views}
+              delta={metrics.monitoring.views.delta}
+              series={metrics.monitoring.views.series}
+              info={metrics.monitoring.views.info}
+            />
             <StatTile
               label="Engagements"
               value={live_engagements}
               delta={metrics.monitoring.engagements.delta}
               series={metrics.monitoring.engagements.series}
+              info={metrics.monitoring.engagements.info}
             />
-            <StatTile label="Clicks" value={live_clicks} delta={metrics.monitoring.clicks.delta} series={metrics.monitoring.clicks.series} />
+            <StatTile
+              label="Clicks"
+              value={live_clicks}
+              delta={metrics.monitoring.clicks.delta}
+              series={metrics.monitoring.clicks.series}
+              info={metrics.monitoring.clicks.info}
+            />
             <StatTile
               label="Conversions"
               value={metrics.monitoring.conversions.value}
               delta={metrics.monitoring.conversions.delta}
+              info={metrics.monitoring.conversions.info}
             />
           </div>
 

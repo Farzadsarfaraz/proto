@@ -218,6 +218,7 @@ export default function ContentCalendarPage() {
         eyebrow="Take Action"
         title="Content Calendar"
         description="Every scheduled, live and posted piece of creator content, in one view."
+        info="Alle geplanten, gerade laufenden und veröffentlichten Creator-Posts in einer Kalenderansicht — damit nichts an dir vorbeigeht."
         action={
           <div className="flex items-center gap-2">
             <button

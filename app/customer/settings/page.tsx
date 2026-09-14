@@ -263,7 +263,11 @@ function SettingsContent() {
 
   return (
     <div className="mx-auto max-w-3xl animate-fade-in">
-      <PageHeader title="Settings" description="Manage your profile, team access and portal preferences." />
+      <PageHeader
+        title="Settings"
+        description="Manage your profile, team access and portal preferences."
+        info="Dein persönliches Profil, wer aus deinem Team Zugriff hat, und wie das Portal aussieht (Hell/Dunkel) und dich benachrichtigt."
+      />
 
       <div className="mb-6 flex gap-1 border-b border-border-hairline">
         {TABS.map((t) => (

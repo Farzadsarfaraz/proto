@@ -4,6 +4,7 @@ import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
 import { cn, formatCompactNumber, formatPercent } from "@/lib/utils";
 import type { SeriesPoint } from "@/lib/types";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 interface StatTileProps {
   label: string;
@@ -12,6 +13,7 @@ interface StatTileProps {
   delta?: number;
   goodDirection?: "up" | "down";
   series?: SeriesPoint[];
+  info?: string;
   className?: string;
 }
 
@@ -24,14 +26,17 @@ function formatValue(value: number, unit: StatTileProps["unit"]) {
   return formatCompactNumber(value);
 }
 
-export function StatTile({ label, value, unit = "number", delta, goodDirection = "up", series, className }: StatTileProps) {
+export function StatTile({ label, value, unit = "number", delta, goodDirection = "up", series, info, className }: StatTileProps) {
   const isPositive = (delta ?? 0) >= 0;
   const isGood = goodDirection === "up" ? isPositive : !isPositive;
 
   return (
     <div className={cn("flex flex-col gap-2.5 rounded-[var(--radius-lg)] border border-border-hairline bg-surface-1 p-5 shadow-[var(--shadow-sm)]", className)}>
       <div className="flex items-start justify-between gap-2">
-        <span className="text-[13px] font-medium text-text-secondary">{label}</span>
+        <span className="flex items-center gap-1 text-[13px] font-medium text-text-secondary">
+          {label}
+          {info && <InfoTooltip text={info} />}
+        </span>
       </div>
       <div className="flex items-end justify-between gap-3">
         <span className="text-[28px] font-semibold leading-none tracking-tight text-text-primary">
