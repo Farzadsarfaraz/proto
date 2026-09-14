@@ -2,10 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { Eye, MapPin, RotateCcw, Search, Sparkles, SlidersHorizontal, Star, ThumbsDown, ThumbsUp, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Eye, MapPin, RotateCcw, Search, Send, Sparkles, SlidersHorizontal, Star, ThumbsDown, ThumbsUp, X } from "lucide-react";
 import { INFLUENCERS, NICHES } from "@/lib/mock-data";
 import type { Influencer, Platform } from "@/lib/types";
 import { useInfluencerPreview } from "@/lib/influencer-preview";
+import { useCustomSets } from "@/lib/custom-sets";
+import { useToast } from "@/lib/toast";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -274,6 +277,9 @@ export default function InfluencerTinderPage() {
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const { influencer: viewingProfile, open: openProfile } = useInfluencerPreview();
+  const { addCustomSet } = useCustomSets();
+  const { push } = useToast();
+  const router = useRouter();
   const startX = useRef(0);
   const exitDirection = useRef<"left" | "right" | null>(null);
   // Skips the persist effect's very first run on mount — that run still
@@ -354,6 +360,17 @@ export default function InfluencerTinderPage() {
 
   function undo() {
     setHistory((h) => h.slice(0, -1));
+  }
+
+  function sendShortlistToSetSelection() {
+    if (shortlist.length === 0) return;
+    const set = addCustomSet(shortlist);
+    push({
+      tone: "success",
+      title: "Shortlist sent to Set Selection",
+      description: `"${set.name}" is ready to review with your other sets.`,
+    });
+    router.push("/customer/action-center#sets");
   }
 
   // Keyboard control: Left/Right to decide, Enter/Space to open the
@@ -486,8 +503,8 @@ export default function InfluencerTinderPage() {
                 ))}
             </div>
             {shortlist.length > 0 && (
-              <Button size="sm" className="mt-4 w-full">
-                Send shortlist to Set Selection
+              <Button size="sm" className="mt-4 w-full" onClick={sendShortlistToSetSelection}>
+                <Send className="size-3.5" /> Send shortlist to Set Selection
               </Button>
             )}
           </div>

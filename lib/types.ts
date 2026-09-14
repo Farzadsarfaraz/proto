@@ -169,3 +169,10 @@ export interface TeamMember {
   role: TeamRole;
   status: "active" | "invited";
 }
+
+export interface CustomSet {
+  id: string;
+  name: string;
+  createdAt: string;
+  influencerIds: string[];
+}

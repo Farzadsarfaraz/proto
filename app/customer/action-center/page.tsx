@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type MouseEvent } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -14,6 +14,8 @@ import {
   MessageSquare,
   MessageSquareWarning,
   Send,
+  Sparkles,
+  Trash2,
   Upload,
 } from "lucide-react";
 import { ACTION_COMPONENTS, BRIEFING_DOCS, CONTENT_REVIEW_ITEMS, INFLUENCERS } from "@/lib/mock-data";
@@ -21,6 +23,7 @@ import type { ActionComponent, BriefingDoc, ContentReviewItem, Influencer } from
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/lib/toast";
 import { useInfluencerPreview } from "@/lib/influencer-preview";
+import { useCustomSets } from "@/lib/custom-sets";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -63,11 +66,13 @@ function ComponentToggleRow({ component, onToggle }: { component: ActionComponen
 }
 
 interface CreatorSet {
+  id: string;
   name: string;
   size: number;
   followerRange: string;
   focus: string;
   influencers: Influencer[];
+  isCustom?: boolean;
 }
 
 function SetDetailModal({
@@ -112,32 +117,74 @@ function SetDetailModal({
   );
 }
 
+const PRESET_SETS: CreatorSet[] = [
+  { id: "preset-reach", name: "Reach Boosters", size: 6, followerRange: "150k–500k", focus: "Awareness", influencers: INFLUENCERS.slice(0, 6) },
+  { id: "preset-engagement", name: "Engagement Core", size: 5, followerRange: "40k–150k", focus: "Engagement", influencers: INFLUENCERS.slice(6, 11) },
+  { id: "preset-conversion", name: "Conversion Specialists", size: 4, followerRange: "18k–80k", focus: "Conversion", influencers: INFLUENCERS.slice(11, 15) },
+];
+
 function SetSelectionSection() {
-  const sets: CreatorSet[] = [
-    { name: "Reach Boosters", size: 6, followerRange: "150k–500k", focus: "Awareness", influencers: INFLUENCERS.slice(0, 6) },
-    { name: "Engagement Core", size: 5, followerRange: "40k–150k", focus: "Engagement", influencers: INFLUENCERS.slice(6, 11) },
-    { name: "Conversion Specialists", size: 4, followerRange: "18k–80k", focus: "Conversion", influencers: INFLUENCERS.slice(11, 15) },
-  ];
+  const { customSets, removeCustomSet } = useCustomSets();
   const [viewingSet, setViewingSet] = useState<CreatorSet | null>(null);
   const { open: openInfluencerPreview } = useInfluencerPreview();
   const { push } = useToast();
+
+  const customCreatorSets: CreatorSet[] = customSets.map((cs) => {
+    const influencers = cs.influencerIds.map((id) => INFLUENCERS.find((inf) => inf.id === id)).filter((inf): inf is Influencer => Boolean(inf));
+    const followerCounts = influencers.map((inf) => inf.followers);
+    const followerRange =
+      followerCounts.length > 0
+        ? `${formatCompactNumber(Math.min(...followerCounts))}–${formatCompactNumber(Math.max(...followerCounts))}`
+        : "—";
+    return {
+      id: cs.id,
+      name: cs.name,
+      size: influencers.length,
+      followerRange,
+      focus: "From Influencer-Tinder",
+      influencers,
+      isCustom: true,
+    };
+  });
+
+  const sets = [...customCreatorSets, ...PRESET_SETS];
 
   function handleUseSet(set: CreatorSet) {
     setViewingSet(null);
     push({ tone: "success", title: `${set.name} added`, description: `${set.size} creators added to your campaign roster.` });
   }
 
+  function handleRemove(e: MouseEvent, id: string) {
+    e.stopPropagation();
+    removeCustomSet(id);
+    push({ tone: "info", title: "Custom set removed" });
+  }
+
   return (
     <>
       <div id="sets" className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {sets.map((s) => (
-          <Card key={s.name}>
+          <Card key={s.id}>
             <CardContent>
-              <div className="flex items-center justify-between">
-                <p className="text-[13.5px] font-semibold text-text-primary">{s.name}</p>
-                <Badge tone="accent">{s.size} creators</Badge>
+              <div className="flex items-center justify-between gap-2">
+                <p className="min-w-0 truncate text-[13.5px] font-semibold text-text-primary">{s.name}</p>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <Badge tone="accent">{s.size} creators</Badge>
+                  {s.isCustom && (
+                    <button
+                      onClick={(e) => handleRemove(e, s.id)}
+                      className="flex size-6 items-center justify-center rounded-full text-text-muted hover:bg-status-critical/10 hover:text-status-critical"
+                      aria-label={`Remove ${s.name}`}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
-              <p className="mt-1 text-[12px] text-text-muted">{s.followerRange} followers · {s.focus}</p>
+              <p className="mt-1 flex items-center gap-1 text-[12px] text-text-muted">
+                {s.isCustom && <Sparkles className="size-3 shrink-0 text-accent" />}
+                {s.followerRange} followers · {s.focus}
+              </p>
               <div className="mt-3 flex -space-x-2">
                 {s.influencers.map((inf) => (
                   <Avatar key={inf.id} name={inf.name} src={inf.photoUrl} size={30} className="ring-2 ring-surface-1" />
